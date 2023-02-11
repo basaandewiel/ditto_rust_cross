@@ -6,15 +6,14 @@ set -o pipefail
 set -o xtrace
 
 readonly TARGET_HOST=root@192.168.2.101
-readonly TARGET_PATH=/tmp/hellorust
+readonly TARGET_PATH=/tmp/dittorustcross
 readonly TARGET_ARCH=arm-unknown-linux-gnueabihf
 #readonly TARGET_ARCH=armv7-unknown-linux-gnueabihf
+#readonly SOURCE_PATH=./target/release/hellorust
 readonly SOURCE_PATH=./target/${TARGET_ARCH}/release/dittorustcross
 
-
+#default MUST be supplied here, so it can lookup the linker in  .cargo/conf?
 cargo build --release --target=${TARGET_ARCH}
-#When cross-compiling, cargo does not use environment variables such as RUSTFLAGS,
-#so following line is useless? Config can be applied in .cargo/config
 #RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target=${TARGET_ARCH}
 #cargo build --release --target=${TARGET_ARCH}
 scp ${SOURCE_PATH} ${TARGET_HOST}:${TARGET_PATH}
