@@ -3,6 +3,9 @@ use dittolive_ditto::{prelude::*};
 use std::sync::Arc;
 
 fn main() -> Result<(), DittoError> {
+
+    println!("Hello, ditto!");
+
     let ditto = Ditto::builder() //@@@why no ; after this line?
      // creates a `ditto_data` folder in the directory containing the executing process
     .with_root(Arc::new(PersistentRoot::from_current_exe()?))
