@@ -1,0 +1,44 @@
+./deploy 
++ readonly TARGET_HOST=root@192.168.2.101
++ TARGET_HOST=root@192.168.2.101
++ readonly TARGET_PATH=/tmp/dittorustcross
++ TARGET_PATH=/tmp/dittorustcross
++ readonly TARGET_ARCH=arm-unknown-linux-gnueabihf
++ TARGET_ARCH=arm-unknown-linux-gnueabihf
++ readonly SOURCE_PATH=./target/arm-unknown-linux-gnueabihf/release/dittorustcross
++ SOURCE_PATH=./target/arm-unknown-linux-gnueabihf/release/dittorustcross
++ LIBDITTO_STATIC=0
++ cargo build --release --target=arm-unknown-linux-gnueabihf
+warning: unused variable: `receiver`
+  --> src/main.rs:23:18
+   |
+23 |     let (sender, receiver) = channel::<(Vec<BoxedDocument>, LiveQueryEvent)>();
+   |                  ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_receiver`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `event_handler`
+  --> src/main.rs:24:9
+   |
+24 |     let event_handler = move |documents: Vec<BoxedDocument>, event: LiveQueryEvent| {
+   |         ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_event_handler`
+
+warning: `dittorustcross` (bin "dittorustcross") generated 2 warnings
+    Finished release [optimized] target(s) in 0.07s
++ scp ./target/arm-unknown-linux-gnueabihf/release/dittorustcross root@192.168.2.101:/tmp/dittorustcross
+dittorustcross         100% 4700KB   8.8MB/s   00:00    
++ scp ../libdittoffi.so root@192.168.2.101:/lib/
+libdittoffi.so         100%   47MB   9.5MB/s   00:04    
++ ssh -t root@192.168.2.101 /tmp/dittorustcross --app-id d789686d-ed85-4283-a842-3c45f3a3b035 --shared-token c341f164-6fd1-4a05-818b-955b95001df2 --collection tasks --mac-address macadress --ip-address ipaddress
+[DEBUG] 2023-03-08T19:48:28.807Z: resolving host="d789686d-ed85-4283-a842-3c45f3a3b035.cloud.ditto.live"
+[VERBOSE] 2023-03-08T19:48:28.811Z: Waiting for write transaction (elapsed: 0s); originator = Internal (prepare-initial-epoch); blocked_by = Unknown
+[VERBOSE] 2023-03-08T19:48:28.811Z: task acquire_write_txn finished, ret = Err(Aborted)
+[DEBUG] 2023-03-08T19:48:28.814Z: pkAocCgkMCUwU395IcXS3oHUpdEtSp24KAy0veGT6ndyhvWBkj1NM: Attachment links db stream watcher: connected
+[DEBUG] 2023-03-08T19:48:28.814Z: pkAocCgkMCUwU395IcXS3oHUpdEtSp24KAy0veGT6ndyhvWBkj1NM: Attachment links worker: connected
+[VERBOSE] 2023-03-08T19:48:28.817Z: task acquire_write_txn finished, ret = Err(Aborted)
+[VERBOSE] 2023-03-08T19:48:28.817Z: Multihop live query: state updated; change_categories = ChangeCategories { link_state: false, rich_peer: false, discovery: false, range_finding: false }
+*** Inserted document with id=6408e68c00e4818700870bdb
+[VERBOSE] 2023-03-08T19:48:28.818Z: task transports watchdog finished, ret = Err(Aborted)
+[VERBOSE] 2023-03-08T19:48:28.818Z: task presence event listener finished, ret = Err(Aborted)
+[VERBOSE] 2023-03-08T19:48:28.818Z: checkout dropped for ("https", d789686d-ed85-4283-a842-3c45f3a3b035.cloud.ditto.live)
+Connection to 192.168.2.101 closed.
