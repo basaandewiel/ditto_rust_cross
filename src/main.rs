@@ -1,39 +1,65 @@
-use dittolive_ditto::{prelude::*};
-//use dittolive_ditto::{identity, prelude::*};
-use std::sync::Arc;
+use dittolive_ditto::{identity::*, prelude::*};
+use std::sync::mpsc::channel;
+use std::{self, str::FromStr, sync::Arc};
+use structopt::StructOpt;
+use serde_json::json;
+
+#[derive(StructOpt)]
+struct Args {
+    #[structopt(long, env = "APP_ID")]
+    app_id: String,
+    #[structopt(long, env = "SHARED_TOKEN")]
+    shared_token: String,
+    #[structopt(long, env = "COLLECTION")]
+    collection: String,
+    #[structopt(long, env = "MAC_ADDRESS")]
+    mac_address: String,
+    #[structopt(long, env = "IP_ADDRESS")]
+    ip_address: String,
+}
 
 fn main() -> Result<(), DittoError> {
+    let args = Args::from_args();
+    let (sender, receiver) = channel::<(Vec<BoxedDocument>, LiveQueryEvent)>();
+    let event_handler = move |documents: Vec<BoxedDocument>, event: LiveQueryEvent| {
+        sender.send((documents, event)).unwrap();
+    };
 
-    println!("Hello, ditto!");
+    let ditto = Ditto::builder()
+        .with_root(Arc::new(PersistentRoot::from_current_exe()?))
+        .with_minimum_log_level(LogLevel::Verbose)
+        .with_identity(|ditto_root| {
+            let app_id = AppId::from_str(&args.app_id).unwrap();
+            let shared_token = args.shared_token;
+            let enable_cloud_sync = true;
+            let custom_auth_url = None;
+            OnlinePlayground::new(
+                ditto_root,
+                app_id,
+                shared_token,
+                enable_cloud_sync,
+                custom_auth_url,
+            )
+        })?
+        .build()?;
 
-    let ditto = Ditto::builder() //@@@why no ; after this line?
-     // creates a `ditto_data` folder in the directory containing the executing process
-    .with_root(Arc::new(PersistentRoot::from_current_exe()?))
-    .with_identity(|ditto_root| {
-        // Provided as an env var, may also be provided as hardcoded string
-        //let app_id  = "0219fe97-ccff-4b24-99d2-140f54ba9a60";
-        let shared_token = "0aa8abeb-c950-4d5d-91da-e0a8fc9aa90a".to_string();
-        //let str1 = "0219fe97-ccff-4b24-99d2-140f54ba9a60";
-        //let app_id = AppId::as_str(str1 as AppId);
-        //let app_id = AppId::from_env("0219fe97-ccff-4b24-99d2-140f54ba9a60")?;
-        let app_id = AppId::generate(); //@@@reading from env give run time error, NotPresent
+    ditto.start_sync().unwrap();
+    let store = ditto.store();
 
-        //let shared_token = std::env::var("0aa8abeb-c950-4d5d-91da-e0a8fc9aa90a").unwrap();
-        let enable_cloud_sync = true;
-        let custom_auth_url = None;
-        OnlinePlayground::new(
-            ditto_root,
-            app_id,
-            shared_token,
-            enable_cloud_sync,
-            custom_auth_url,
-        )
-    })?
-    .build()?;
+    let mac_address = args.mac_address;
+    let ip_address = args.ip_address;
+    let collection = args.collection;
 
-    ditto.start_sync()?;
-    println!("ditto sync started\n");
+    let device_info = json!({
+        "mac_address": mac_address,
+        "ip_address": ip_address,
+    });
+    let collection_id = store.collection(&collection).unwrap();
+    let id = collection_id.upsert(device_info).unwrap();
+
+    println!("*** Inserted document with id={}", id);
+
     Ok(()) //without ; so that this value is returned; and provide empty argument (), because
-        //when result is OK, the no value should be returned
+    //when result is OK, the no value should be returned
 
 }

@@ -7,8 +7,8 @@ set -o xtrace
 
 readonly TARGET_HOST=root@192.168.2.101
 readonly TARGET_PATH=/tmp/dittorustcross
-#readonly TARGET_ARCH=arm-unknown-linux-gnueabihf
 readonly TARGET_ARCH=arm-unknown-linux-gnueabihf
+#readonly TARGET_ARCH=arm-unknown-linux-musleabihf
 #readonly SOURCE_PATH=./target/release/hellorust
 readonly SOURCE_PATH=./target/${TARGET_ARCH}/release/dittorustcross
 
@@ -16,6 +16,7 @@ readonly SOURCE_PATH=./target/${TARGET_ARCH}/release/dittorustcross
 #cp ../libdittoffi.* target/arm-unknown-linux-gnueabihf/release/build/dittolive-ditto-sys-03c74983c2da6396/out/
 
 #default target MUST be supplied here, so it can lookup the linker in  .cargo/conf?
+#cargo build --release --target=${TARGET_ARCH}
 LIBDITTO_STATIC=0 cargo build --release --target=${TARGET_ARCH}
 scp ${SOURCE_PATH} ${TARGET_HOST}:${TARGET_PATH}
 
@@ -24,6 +25,7 @@ scp ../libdittoffi.so ${TARGET_HOST}:/lib/
 
 #connects to the target board over SSH and tries to run the binary we just copied there. 
 #-t ensures that the command is terminatied when we hit ctrl-c in our terminal
-ssh -t ${TARGET_HOST} ${TARGET_PATH}
+ssh -t ${TARGET_HOST} ${TARGET_PATH} --app-id "d789686d-ed85-4283-a842-3c45f3a3b035" --shared-token "c341f164-6fd1-4a05-818b-955b95001df2" --collection "tasks" --mac-address macadress --ip-address ipaddress
+
 
 
